@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tạo bài kiểm tra</title>
+  <style>
+    body { font-family: Arial; max-width: 700px; margin: 20px auto; background: #f4f6fb; }
+    .box { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; margin-top: 20px; }
+    input, select, button { width: 100%; padding: 10px; margin: 5px 0; }
+    button { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Tạo bài kiểm tra</h2>
+  <div class="box">
+    <div class="question">
+      <label>Câu hỏi:</label>
+      <input type="text" id="questionText">
+    </div>
+    <label>Đáp án A:</label><input type="text" id="answerA">
+    <label>Đáp án B:</label><input type="text" id="answerB">
+    <label>Đáp án C:</label><input type="text" id="answerC">
+    <label>Đáp án D:</label><input type="text" id="answerD">
+
+    <label>Đáp án đúng:</label>
+    <select id="correctAnswer">
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="D">D</option>
+    </select>
+
+    <button id="addQuestionBtn">➕ Thêm câu hỏi</button>
+    <button id="createRoomBtn">🎯 Tạo phòng</button>
+  </div>
+
+  <div id="roomInfo" class="box" style="display:none;"></div>
+
+  <script>
+    
+    let questions = [];
+
+    document.getElementById("addQuestionBtn").addEventListener("click", () => {
+      const q = {
+        question: document.getElementById("questionText").value,
+        A: document.getElementById("answerA").value,
+        B: document.getElementById("answerB").value,
+        C: document.getElementById("answerC").value,
+        D: document.getElementById("answerD").value,
+        correct: document.getElementById("correctAnswer").value
+      };
+      if (!q.question) return alert("Nhập câu hỏi!");
+
+      questions.push(q);
+      alert("✅ Đã thêm câu hỏi");
+      document.querySelectorAll("input").forEach(i => i.value = "");
+    });
+
+    function generateRoomCode() {
+      return Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    document.getElementById("createRoomBtn").addEventListener("click", () => {
+      if (questions.length === 0) return alert("Chưa có câu hỏi nào!");
+
+      const roomCode = generateRoomCode();
+      localStorage.setItem("room_" + roomCode, JSON.stringify({questions, results: []}));
+
+      document.getElementById("roomInfo").style.display = "block";
+      document.getElementById("roomInfo").innerHTML = `
+        <h3>Phòng đã tạo!</h3>
+        <p><b>Mã phòng:</b> ${roomCode}</p>
+      `;
+      questions = [];
+    });
+    fetch("https://api.unsplash.com/photos/random?query=classroom&client_id=Pd8APIXjQwibU2oEFAiaOUVp4hi9NDh6LTPVNOff2cI")
+  .then(res => res.json())
+  .then(data => {
+    document.body.style.backgroundImage = `url(${data.urls.full})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+  });
+
+  </script>
+</body>
+</html>

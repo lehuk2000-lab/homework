@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Làm bài kiểm tra</title>
+  <style>
+    .question-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  max-width: 500px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+.question-card h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.options input {
+  margin-right: 10px;
+  transform: scale(1.2);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4CAF50;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 
+0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #45a049;
+}
+
+    body { font-family: Arial; max-width: 600px; margin: 20px auto; }
+    .box { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; margin-top: 20px; }
+    input, button { width: 100%; padding: 10px; margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <h2>Vào phòng làm bài</h2>
+  <div class="box">
+    <input type="text" id="studentName" placeholder="Tên của bạn">
+    <input type="text" id="roomCodeInput" placeholder="Nhập mã phòng">
+    <button id="joinRoomBtn">Vào phòng</button>
+  </div>
+
+  <form id="quizBox" class="box" style="display:none;">
+    <div id="questionsContainer"></div>
+    <button type="submit">Nộp bài</button>
+  </form>
+
+  <div id="resultBox" class="box" style="display:none;"></div>
+
+  <script>
+    let currentRoomCode = "";
+    let currentQuestions = [];
+
+    document.getElementById("joinRoomBtn").addEventListener("click", () => {
+      const roomCode = document.getElementById("roomCodeInput").value.trim().toUpperCase();
+      const name = document.getElementById("studentName").value.trim();
+      if (!roomCode || !name) return alert("Nhập tên và mã phòng!");
+
+      const data = localStorage.getItem("room_" + roomCode);
+      if (!data) return alert("❌ Không tìm thấy phòng này");
+
+      const roomData = JSON.parse(data);
+      currentRoomCode = roomCode;
+      currentQuestions = roomData.questions;
+
+      const container = document.getElementById("questionsContainer");
+      container.innerHTML = "";
+      currentQuestions.forEach((q, i) => {
+        container.innerHTML += `
+          <div class="q">
+            <p><b>Câu ${i+1}:</b> ${q.question}</p>
+            <label><input type="radio" name="q${i}" value="A"> A. ${q.A}</label><br>
+            <label><input type="radio" name="q${i}" value="B"> B. ${q.B}</label><br>
+            <label><input type="radio" name="q${i}" value="C"> C. ${q.C}</label><br>
+            <label><input type="radio" name="q${i}" value="D"> D. ${q.D}</label><br>
+          </div>
+        `;
+      });
+
+      document.getElementById("quizBox").style.display = "block";
+    });
+
+    document.getElementById("quizBox").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("studentName").value.trim();
+      let correct = 0;
+      currentQuestions.forEach((q, i) => {
+        const ans = document.querySelector(`input[name="q${i}"]:checked`);
+        if (ans && ans.value === q.correct) correct++;
+      });
+
+      const roomData = JSON.parse(localStorage.getItem("room_" + currentRoomCode));
+      roomData.results.push({name, score: `${correct}/${currentQuestions.length}`});
+      localStorage.setItem("room_" + currentRoomCode, JSON.stringify(roomData));
+
+      document.getElementById("quizBox").style.display = "none";
+      document.getElementById("resultBox").style.display = "block";
+      document.getElementById("resultBox").innerHTML = `<h3>Kết quả của bạn</h3><p>${correct}/${currentQuestions.length} câu đúng</p>`;
+    });
+    fetch("https://api.unsplash.com/photos/random?query=classroom&client_id=Pd8APIXjQwibU2oEFAiaOUVp4hi9NDh6LTPVNOff2cI")
+  .then(res => res.json())
+  .then(data => {
+    document.body.style.backgroundImage = `url(${data.urls.full})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+  });
+
+  </script>
+</body>
+</html>
